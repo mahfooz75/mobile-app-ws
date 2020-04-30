@@ -16,6 +16,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.appsdeveloperblog.app.ws.SpringApplicationContext;
+import com.appsdeveloperblog.app.ws.service.UserService;
+import com.appsdeveloperblog.app.ws.shared.dto.UserDto;
 import com.appsdeveloperblog.app.ws.ui.model.request.UserLoginRequestModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -54,8 +57,12 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 		String token = Jwts.builder().setSubject(userName)
 				.setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
 				.signWith(SignatureAlgorithm.HS256, SecurityConstants.TOKEN_SECRET).compact();
-		response.setHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
 
+		UserService userService = (UserService) SpringApplicationContext.getBean("userServiceImpl");
+		UserDto userDto = userService.getUser(userName);
+
+		response.setHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
+		response.addHeader("UserId", userDto.getUserId());
 	}
 
 }
